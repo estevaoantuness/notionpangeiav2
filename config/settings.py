@@ -25,6 +25,11 @@ class Settings:
     GPT_MODEL: str = os.getenv("GPT_MODEL", "gpt-4o-mini")
     TEMPERATURE: float = float(os.getenv("TEMPERATURE", "0.7"))
 
+    # LLM Features
+    ENABLE_LLM_FALLBACK: bool = os.getenv("ENABLE_LLM_FALLBACK", "true").lower() == "true"
+    ENABLE_LLM_RESPONSES: bool = os.getenv("ENABLE_LLM_RESPONSES", "false").lower() == "true"
+    LLM_CONFIDENCE_THRESHOLD: float = float(os.getenv("LLM_CONFIDENCE_THRESHOLD", "0.7"))
+
     # Flask
     FLASK_SECRET_KEY: str = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
     PORT: int = int(os.getenv("PORT", "5000"))

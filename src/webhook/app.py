@@ -13,6 +13,8 @@ from config.settings import settings
 from src.whatsapp.client import whatsapp_client
 from src.notion.client import notion_client
 from src.commands.parser import parse_command
+from src.llm.agent import llm_agent
+from config.colaboradores import get_name_by_phone
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -76,11 +78,35 @@ def webhook_whatsapp():
 
         logger.info(f"Mensagem de {phone}: {text}")
 
-        # Parsear comando
+        # Parsear comando (tentar regex primeiro - rápido)
         command_type, command_data = parse_command(text)
 
+        if not command_type and settings.ENABLE_LLM_FALLBACK:
+            # Fallback para LLM quando regex não reconhece
+            logger.info(f"Parser regex falhou, tentando LLM...")
+
+            # Montar contexto para o LLM
+            user_name = get_name_by_phone(phone) or "Usuário"
+            tasks = user_tasks_cache.get(phone, [])
+
+            context = {
+                "user_name": user_name,
+                "tasks": tasks,
+                "task_count": len(tasks)
+            }
+
+            # LLM processa linguagem natural
+            llm_result = llm_agent.parse_natural_language(text, context)
+
+            if llm_result["confidence"] >= settings.LLM_CONFIDENCE_THRESHOLD:
+                command_type = llm_result["command"]
+                command_data = llm_result["params"]
+                logger.info(f"LLM entendeu comando: {command_type} (confidence: {llm_result['confidence']})")
+            else:
+                logger.info(f"LLM confidence baixa ({llm_result['confidence']}), comando não reconhecido")
+
         if not command_type:
-            # Comando não reconhecido
+            # Ainda não reconheceu, resposta genérica
             response = (
                 "🤔 Não entendi esse comando.\n\n"
                 "**Comandos disponíveis:**\n"
