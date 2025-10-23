@@ -1,0 +1,22 @@
+# Web Framework
+flask==3.0.0
+gunicorn==21.2.0
+
+# WhatsApp (Evolution API)
+requests==2.31.0
+
+# Notion API
+notion-client==2.2.1
+
+# OpenAI
+openai==1.12.0
+
+# Scheduler
+APScheduler==3.10.4
+
+# YAML
+pyyaml==6.0.1
+
+# Utils
+python-dotenv==1.0.0
+pytz==2024.1
