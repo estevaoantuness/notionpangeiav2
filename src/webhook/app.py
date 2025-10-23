@@ -122,6 +122,24 @@ def webhook_whatsapp():
         # Processar comando
         response = process_command(phone, command_type, command_data)
 
+        # Humanizar resposta com LLM (se habilitado)
+        if settings.ENABLE_LLM_RESPONSES and command_type:
+            user_name = get_name_by_phone(phone) or "Usuário"
+            tasks = user_tasks_cache.get(phone, [])
+
+            context = {
+                "user_name": user_name,
+                "tasks": tasks,
+                "task_count": len(tasks)
+            }
+
+            command_result = {
+                "command": command_type,
+                "result": response
+            }
+
+            response = llm_agent.format_response(command_result, context)
+
         # Enviar resposta
         whatsapp_client.send_message(phone, response)
 
